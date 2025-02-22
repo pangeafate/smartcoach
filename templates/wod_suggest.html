@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WOD Suggestion</title>
+    <base href="/">
+    <!-- Bootstrap CSS from CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <style>
+      body {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        color: #212529;
+      }
+      .card {
+        background: #fff;
+        border: none;
+        border-radius: 0.75rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+      }
+      .card-header {
+        background-color: #212529;
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+      .card-body p {
+        font-size: 1.05rem;
+        line-height: 1.5;
+      }
+      /* Feedback buttons: uniform size and spacing */
+      .feedback-container {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .btn-feedback {
+        flex: 1 1 0;
+        max-width: 150px;
+      }
+      /* Collapse header button styling */
+      .collapse-btn {
+        width: 100%;
+        text-align: left;
+        color: inherit;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: inherit;
+      }
+      .collapse-btn:focus {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container py-5">
+      
+      <!-- Display current user name -->
+      {% if user_name %}
+        <p class="text-end">Welcome, {{ user_name }}</p>
+      {% endif %}
+      
+      <!-- Collapsible Last WOD Card -->
+      <div class="card">
+        <div class="card-header" id="lastWODHeader">
+          <button class="collapse-btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseLastWOD" aria-expanded="false" aria-controls="collapseLastWOD">
+            {% if last_wod %}
+              Last WOD - {{ last_wod.date }} <span>&#9660;</span>
+            {% else %}
+              Last WOD <span>&#9660;</span>
+            {% endif %}
+          </button>
+        </div>
+        <div id="collapseLastWOD" class="collapse" aria-labelledby="lastWODHeader">
+          <div class="card-body">
+            {% if last_wod %}
+              {% set saved_wod_text = last_wod.details.get('wod_workout', last_wod.details.get('exercises', '')) %}
+              <p class="card-text">
+                {{ saved_wod_text | markdown_bold | replace("\r\n", "<br>") | safe }}
+              </p>
+              {% if last_wod.details.get('wod_difficulty') %}
+                <p class="card-text">
+                  <strong>Feedback:</strong> {{ last_wod.details.get('wod_difficulty') }}
+                </p>
+              {% endif %}
+            {% else %}
+              <p>No recorded WOD session.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      
+      <!-- Today's WOD Program Card -->
+      <div class="card">
+        <div class="card-header">
+          Today's WOD Program
+        </div>
+        <div class="card-body">
+          {% for block in suggestion_blocks %}
+            <div class="card mb-3">
+              <div class="card-body">
+                {{ block | markdown_bold | replace("\n", "<br>") | safe }}
+              </div>
+            </div>
+          {% endfor %}
+          
+          <!-- Feedback Form -->
+          <div class="text-center mt-4">
+            <p class="mb-3">
+              Press a button to save the workout (as if you have done it) indicating whether it was easy or not.<br>
+              If you don't want to save it - press Back to Home.
+            </p>
+            <form action="{{ url_for('record_wod_feedback') }}" method="post">
+              {# The hidden field contains the full suggested WOD text (all blocks combined) #}
+              <input type="hidden" name="wod_workout" value="{{ saved_wod }}">
+              <div class="feedback-container">
+                <button name="feedback" value="too easy" class="btn btn-secondary btn-feedback">Too Easy</button>
+                <button name="feedback" value="easy" class="btn btn-secondary btn-feedback">Easy</button>
+                <button name="feedback" value="perfect" class="btn btn-secondary btn-feedback">Perfect</button>
+                <button name="feedback" value="too difficult" class="btn btn-secondary btn-feedback">Too Difficult</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Back to Home Button -->
+      <div class="text-center mt-4">
+        <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Back to Home</a>
+      </div>
+    </div>
+    
+    <!-- Bootstrap Bundle JS from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+  </body>
+</html>

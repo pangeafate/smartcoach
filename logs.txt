@@ -1,0 +1,4 @@
+Retrieving logs...
+Logs were saved to /Users/sergeypodolskiy/projects/New AI workout coach copy 25 02 21/.elasticbeanstalk/logs/250222_181206
+Logs were saved to /Users/sergeypodolskiy/projects/New AI workout coach copy 25 02 21/.elasticbeanstalk/logs/250222_181206
+Updated symlink at /Users/sergeypodolskiy/projects/New AI workout coach copy 25 02 21/.elasticbeanstalk/logs/latest
