@@ -33,7 +33,9 @@ def logout():
     return redirect(url_for('index'))
 
 # --- Prompt Storage Functions ---
-PROMPTS_FILE = "prompts.json"
+import os
+
+PROMPTS_FILE = os.path.join("/data", "prompts.json")
 
 def load_prompts():
     if not os.path.exists(PROMPTS_FILE):
@@ -289,18 +291,33 @@ def gym_suggest():
     # Sort gym workouts by date descending (assumes ISO format: YYYY-MM-DD)
     gym_workouts = sorted(gym_workouts, key=lambda w: w["date"], reverse=True)
     
-    # Take the five most recent workouts
-    recent_workouts = gym_workouts[:5]
-    history_text = "\n".join([
-        f"Date: {w['date']}, Muscle Group: {w['details'].get('muscle_group','')}, "
-        f"Exercise: {w['details'].get('exercise','')}, Max Weight: {w['details'].get('max_weight','')}, "
-        f"Sets: {w['details'].get('sets','')}, Reps: {w['details'].get('reps','')}"
-        for w in recent_workouts
-    ])
+    # Group workouts by session date
+    sessions = {}
+    for w in gym_workouts:
+        sessions.setdefault(w["date"], []).append(w)
     
-    if gym_workouts:
-        max_date = gym_workouts[0]["date"]  # most recent date after sorting
-        last_workouts = [w for w in gym_workouts if w["date"] == max_date]
+    # Sort the session dates in descending order
+    session_dates = sorted(sessions.keys(), reverse=True)
+    
+    # Build a structured history string
+    structured_history_lines = []
+    for date in session_dates:
+        structured_history_lines.append(f"Session Date: {date}")
+        for record in sessions[date]:
+            structured_history_lines.append(
+                f"- Body Part: {record['details'].get('muscle_group', '')}, "
+                f"Exercise: {record['details'].get('exercise', '')}, "
+                f"Max Weight: {record['details'].get('max_weight', '')}, "
+                f"Sets: {record['details'].get('sets', '')}, "
+                f"Reps: {record['details'].get('reps', '')}"
+            )
+        structured_history_lines.append("")  # Blank line between sessions
+    history_text = "\n".join(structured_history_lines)
+    
+    # Determine the most recent session (for display purposes, if needed)
+    if session_dates:
+        max_date = session_dates[0]  # most recent date
+        last_workouts = sessions[max_date]
         records = []
         for w in last_workouts:
             records.append({
@@ -328,6 +345,7 @@ def gym_suggest():
     
     suggestion = query_openai(prompt)
     return render_template('gym_suggest.html', suggestion=suggestion, last_session=last_session)
+
 
 # ------------------------------
 # WOD (CrossFit) Routes

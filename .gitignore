@@ -7,6 +7,8 @@ __pycache__/
 
 # VS Code settings
 .vscode/
+.DS_Store
+
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

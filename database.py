@@ -7,7 +7,7 @@ USE_SQLITE = os.environ.get("USE_SQLITE", "true").lower() == "true"
 
 if USE_SQLITE:
     # Use a custom database path if provided (e.g., on Render use a persistent disk path).
-    db_path = os.environ.get("DB_PATH", "test.db")
+    db_path = os.environ.get("DB_PATH", "/data/test.db")
     # Connect to (or create) a local SQLite database file.
     conn = sqlite3.connect(db_path, check_same_thread=False)
     cursor = conn.cursor()
